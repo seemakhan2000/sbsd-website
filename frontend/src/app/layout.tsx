@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import VirginiaAgencyBar from "@/src/components/layout/VirginiaAgencyBar";
 import Navbar from "@/src/components/layout/Navbar";
 import Footer from "@/src/components/layout/Footer";
+import ChatbotWidget from "@/src/components/chatbot/ChatbotWidget";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -22,6 +23,7 @@ export default function RootLayout({
         <VirginiaAgencyBar />
         <Navbar />
         <main>{children}</main>
+        <ChatbotWidget />
         <Footer />
       </body>
     </html>
