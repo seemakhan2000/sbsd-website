@@ -19,13 +19,29 @@ if (!process.env.FRONTEND_URL) {
   throw new Error("FRONTEND_URL is missing from your .env file.");
 }
 
+// Allowed frontend origins (Local + Vercel)
+const allowedOrigins = [
+  "http://localhost:3000",
+  "http://localhost:3001",
+  "https://sbsd-website-hv7e.vercel.app",
+  "https://sbsd-website-t49k.vercel.app",
+];
+
 // Security middleware
 app.use(helmet());
 
+// CORS configuration
 app.use(
   cors({
-    origin: process.env.FRONTEND_URL,
-    methods: ["GET", "POST"],
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+
+      return callback(new Error(`CORS blocked origin: ${origin}`));
+    },
+    methods: ["GET", "POST", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
     credentials: false,
   })
 );
