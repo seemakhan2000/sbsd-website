@@ -30,6 +30,14 @@ app.use(
   })
 );
 
+// Root route
+app.get("/", (req, res) => {
+  res.status(200).json({
+    success: true,
+    message: "Virginia SBSD Chatbot API is running.",
+  });
+});
+
 app.use(express.json({ limit: "20kb" }));
 
 app.use(mongoSanitize());
