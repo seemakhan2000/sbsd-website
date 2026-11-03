@@ -24,7 +24,7 @@ const allowedOrigins = [
   "http://localhost:3000",
   "http://localhost:3001",
   "https://sbsd-website-hv7e.vercel.app",
-  "https://sbsd-website-t49k.vercel.app",
+  "https://sbsd-website.vercel.app",
 ];
 
 // Security middleware
