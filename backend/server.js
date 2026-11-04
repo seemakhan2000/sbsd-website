@@ -14,12 +14,12 @@ const app = express();
 
 const PORT = process.env.PORT || 5000;
 
-// Validate required environment variables
+// Validate environment variables
 if (!process.env.FRONTEND_URL) {
-  throw new Error("FRONTEND_URL is missing from your .env file.");
+  throw new Error("FRONTEND_URL is missing from .env file.");
 }
 
-// Allowed frontend origins
+// Allowed frontend domains
 const allowedOrigins = [
   "http://localhost:3000",
   "http://localhost:3001",
@@ -27,31 +27,24 @@ const allowedOrigins = [
   // Production frontend
   "https://sbsd-website.vercel.app",
 
-  // Existing chatbot frontend, if required
-  "https://sbsd-chatbot.vercel.app",
+  // Current frontend deployment
+  "https://sbsd-website-osyb.vercel.app",
 
-  // Previous production frontend
+  // Previous frontend deployment
   "https://sbsd-website-hv7e.vercel.app",
 ];
 
-// Allow production and this project's Vercel preview deployments
+// Validate frontend origin
 const isAllowedOrigin = (origin) => {
   if (!origin) return true;
 
-  if (allowedOrigins.includes(origin)) {
-    return true;
-  }
-
-  // Allow only this project's Vercel preview deployments
-  return /^https:\/\/sbsd-website-hv7e-[a-z0-9-]+-seemakhan2000s-projects\.vercel\.app$/.test(
-    origin
-  );
+  return allowedOrigins.includes(origin);
 };
 
 // Security middleware
 app.use(helmet());
 
-// CORS configuration
+// CORS middleware
 app.use(
   cors({
     origin: (origin, callback) => {
@@ -71,6 +64,12 @@ app.use(
   })
 );
 
+// Body parser
+app.use(express.json({ limit: "20kb" }));
+
+// MongoDB sanitization
+app.use(mongoSanitize());
+
 // Root route
 app.get("/", (req, res) => {
   res.status(200).json({
@@ -78,12 +77,6 @@ app.get("/", (req, res) => {
     message: "Virginia SBSD Chatbot API is running.",
   });
 });
-
-// Body parser
-app.use(express.json({ limit: "20kb" }));
-
-// MongoDB sanitization
-app.use(mongoSanitize());
 
 // Health check
 app.get("/api/health", (req, res) => {
@@ -132,8 +125,8 @@ const startServer = async () => {
 
     app.listen(PORT, () => {
       console.log(`Server running on port ${PORT}`);
-      console.log("Frontend: https://sbsd-website.vercel.app");
-      console.log("Free Knowledge Base chatbot initialized.");
+      console.log("Allowed frontend: https://sbsd-website.vercel.app");
+      console.log("Virginia SBSD Chatbot initialized.");
     });
   } catch (error) {
     console.error("Server startup failed:", error.message);
