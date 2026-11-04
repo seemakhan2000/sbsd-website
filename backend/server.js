@@ -23,7 +23,7 @@ if (!process.env.FRONTEND_URL) {
 const allowedOrigins = [
   "http://localhost:3000",
   "http://localhost:3001",
-  "https://sbsd-website-osyb.vercel.app",
+  "https://sbsd-website-virginia.vercel.app",
   "https://sbsd-website.vercel.app",
 ];
 
