@@ -1,4 +1,4 @@
-const API_URL = process.env.NEXT_PUBLIC_CHATBOT_API_URL;
+const API_URL = process.env.NEXT_PUBLIC_CHATBOT_API_URL?.replace(/\/+$/, "");
 
 export interface ChatSource {
   title: string;
@@ -24,7 +24,15 @@ interface SendMessagePayload {
 export const sendChatMessage = async (
   payload: SendMessagePayload
 ): Promise<ChatResponse> => {
-  const response = await fetch(`${API_URL}/chatbot/message`, {
+  if (!API_URL) {
+    throw new Error("Chatbot API URL is not configured.");
+  }
+
+  const endpoint = `${API_URL}/chatbot/message`;
+
+  console.log("Chatbot API Endpoint:", endpoint);
+
+  const response = await fetch(endpoint, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
