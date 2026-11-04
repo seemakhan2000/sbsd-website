@@ -23,8 +23,15 @@ if (!process.env.FRONTEND_URL) {
 const allowedOrigins = [
   "http://localhost:3000",
   "http://localhost:3001",
-  "https://sbsd-website-hv7e.vercel.app",
+
+  // Production frontend
+  "https://sbsd-website.vercel.app",
+
+  // Existing chatbot frontend, if required
   "https://sbsd-chatbot.vercel.app",
+
+  // Previous production frontend
+  "https://sbsd-website-hv7e.vercel.app",
 ];
 
 // Allow production and this project's Vercel preview deployments
@@ -35,6 +42,7 @@ const isAllowedOrigin = (origin) => {
     return true;
   }
 
+  // Allow only this project's Vercel preview deployments
   return /^https:\/\/sbsd-website-hv7e-[a-z0-9-]+-seemakhan2000s-projects\.vercel\.app$/.test(
     origin
   );
@@ -100,6 +108,23 @@ app.use((req, res) => {
   });
 });
 
+// Error handler
+app.use((error, req, res, next) => {
+  if (error.message?.startsWith("CORS blocked origin:")) {
+    return res.status(403).json({
+      success: false,
+      message: "Access denied.",
+    });
+  }
+
+  console.error("API Error:", error.message);
+
+  return res.status(500).json({
+    success: false,
+    message: "Internal server error.",
+  });
+});
+
 // Start server
 const startServer = async () => {
   try {
@@ -107,6 +132,7 @@ const startServer = async () => {
 
     app.listen(PORT, () => {
       console.log(`Server running on port ${PORT}`);
+      console.log("Frontend: https://sbsd-website.vercel.app");
       console.log("Free Knowledge Base chatbot initialized.");
     });
   } catch (error) {
