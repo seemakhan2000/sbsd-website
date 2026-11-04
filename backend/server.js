@@ -24,7 +24,7 @@ const allowedOrigins = [
   "http://localhost:3000",
   "http://localhost:3001",
   "https://sbsd-website-hv7e.vercel.app",
-  "https://sbsd-website-hv7e-9a2mz3m50-seemakhan2000s-projects.vercel.app",
+  "https://sbsd-chatbot.vercel.app",
 ];
 
 // Allow production and this project's Vercel preview deployments
