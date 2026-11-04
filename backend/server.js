@@ -19,13 +19,26 @@ if (!process.env.FRONTEND_URL) {
   throw new Error("FRONTEND_URL is missing from your .env file.");
 }
 
-// Allowed frontend origins (Local + Vercel)
+// Allowed frontend origins
 const allowedOrigins = [
   "http://localhost:3000",
   "http://localhost:3001",
   "https://sbsd-website-hv7e.vercel.app",
-  "https://sbsd-website.vercel.app",
+  "https://sbsd-website-hv7e-9a2mz3m50-seemakhan2000s-projects.vercel.app",
 ];
+
+// Allow production and this project's Vercel preview deployments
+const isAllowedOrigin = (origin) => {
+  if (!origin) return true;
+
+  if (allowedOrigins.includes(origin)) {
+    return true;
+  }
+
+  return /^https:\/\/sbsd-website-hv7e-[a-z0-9-]+-seemakhan2000s-projects\.vercel\.app$/.test(
+    origin
+  );
+};
 
 // Security middleware
 app.use(helmet());
@@ -34,15 +47,19 @@ app.use(helmet());
 app.use(
   cors({
     origin: (origin, callback) => {
-      if (!origin || allowedOrigins.includes(origin)) {
+      if (isAllowedOrigin(origin)) {
         return callback(null, true);
       }
 
-      return callback(new Error(`CORS blocked origin: ${origin}`));
+      return callback(
+        new Error(`CORS blocked origin: ${origin}`)
+      );
     },
     methods: ["GET", "POST", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
     credentials: false,
+    optionsSuccessStatus: 204,
+    maxAge: 86400,
   })
 );
 
@@ -54,8 +71,10 @@ app.get("/", (req, res) => {
   });
 });
 
+// Body parser
 app.use(express.json({ limit: "20kb" }));
 
+// MongoDB sanitization
 app.use(mongoSanitize());
 
 // Health check
