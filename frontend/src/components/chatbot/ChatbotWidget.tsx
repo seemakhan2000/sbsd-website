@@ -149,13 +149,13 @@ export default function ChatbotWidget() {
   return (
     <div
       className="
-        fixed bottom-3 right-3 sm:bottom-7 sm:right-7
+        fixed bottom-3 right-3 sm:bottom-5 sm:right-6
         z-[9999] flex flex-col items-end gap-3 sm:gap-4
         pb-[env(safe-area-inset-bottom)]
 
         /* Nav/header ki height jo chat window ko cover nahi karni chahiye.
            Apne nav ke hisaab se isay adjust karein. */
-        [--sbsd-nav:160px]
+        [--sbsd-nav:152px]
       "
     >
       {/* Custom keyframes */}
@@ -176,7 +176,7 @@ export default function ChatbotWidget() {
       {/* ───────── Chatbot Window ─────────
           Mobile  (<640px): full screen sheet
           Desktop (>=640px): floating card, height screen ke hisaab se
-                             (neeche anchored, nav ke neeche), 320px - 720px
+                             (neeche anchored, nav ke neeche), 320px - 760px
       */}
       <div
         aria-hidden={!isOpen}
@@ -193,8 +193,8 @@ export default function ChatbotWidget() {
           /* Desktop: responsive card */
           sm:relative
           sm:w-[min(340px,calc(100vw_-_3.5rem))]
-          sm:h-[max(320px,min(720px,calc(100dvh_-_44px_-_var(--sbsd-nav))))]
-          sm:max-h-[calc(100dvh_-_44px)]
+          sm:h-[max(320px,min(760px,calc(100dvh_-_32px_-_var(--sbsd-nav))))]
+          sm:max-h-[calc(100dvh_-_32px)]
 
           ${
             isOpen
