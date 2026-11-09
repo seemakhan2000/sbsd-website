@@ -1,13 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import {
-  MessageCircle,
-  X,
-  Sparkles,
-  Bot,
-  ArrowRight,
-} from "lucide-react";
+import { MessageCircle, X, Bot, ArrowRight } from "lucide-react";
 
 import ChatbotWindow from "./ChatbotWindow";
 
@@ -23,9 +17,7 @@ export default function ChatbotWidget() {
   // X dabane ke baad jab tak mouse bahar na jaye, hover se card na aaye
   const [hoverSuppressed, setHoverSuppressed] = useState(false);
 
-  const [messages, setMessages] = useState<
-    ChatMessageType[]
-  >([]);
+  const [messages, setMessages] = useState<ChatMessageType[]>([]);
 
   const [conversationId, setConversationId] = useState<
     string | undefined
@@ -51,6 +43,29 @@ export default function ChatbotWidget() {
     };
   }, []);
 
+  // Mobile par chat khula ho to background page scroll lock
+  useEffect(() => {
+    if (!isOpen) return;
+    const mq = window.matchMedia("(max-width: 639px)");
+    if (!mq.matches) return;
+
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, [isOpen]);
+
+  // Escape key se close
+  useEffect(() => {
+    if (!isOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setIsOpen(false);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [isOpen]);
+
   const dismissGreeting = () => {
     setShowGreeting(false);
     setHoverSuppressed(true);
@@ -60,17 +75,11 @@ export default function ChatbotWidget() {
   };
 
   const getSessionId = () => {
-    let sessionId = sessionStorage.getItem(
-      "sbsd_chat_session"
-    );
+    let sessionId = sessionStorage.getItem("sbsd_chat_session");
 
     if (!sessionId) {
       sessionId = crypto.randomUUID();
-
-      sessionStorage.setItem(
-        "sbsd_chat_session",
-        sessionId
-      );
+      sessionStorage.setItem("sbsd_chat_session", sessionId);
     }
 
     return sessionId;
@@ -85,10 +94,7 @@ export default function ChatbotWidget() {
       content: value,
     };
 
-    setMessages((previous) => [
-      ...previous,
-      userMessage,
-    ]);
+    setMessages((previous) => [...previous, userMessage]);
 
     setLoading(true);
 
@@ -109,10 +115,7 @@ export default function ChatbotWidget() {
         sources: result.data.sources,
       };
 
-      setMessages((previous) => [
-        ...previous,
-        assistantMessage,
-      ]);
+      setMessages((previous) => [...previous, assistantMessage]);
     } catch (error) {
       const errorMessage: ChatMessageType = {
         id: crypto.randomUUID(),
@@ -121,10 +124,7 @@ export default function ChatbotWidget() {
           "I'm sorry, I'm unable to process your request right now. Please try again shortly.",
       };
 
-      setMessages((previous) => [
-        ...previous,
-        errorMessage,
-      ]);
+      setMessages((previous) => [...previous, errorMessage]);
 
       console.error("Chatbot request failed:", error);
     } finally {
@@ -147,7 +147,17 @@ export default function ChatbotWidget() {
   const greetingVisible = showGreeting && !isOpen;
 
   return (
-    <div className="fixed bottom-[10px] right-5 sm:bottom-7 sm:right-7 z-[9999] flex flex-col items-end gap-4">
+    <div
+      className="
+        fixed bottom-3 right-3 sm:bottom-7 sm:right-7
+        z-[9999] flex flex-col items-end gap-3 sm:gap-4
+        pb-[env(safe-area-inset-bottom)]
+
+        /* Nav/header ki height jo chat window ko cover nahi karni chahiye.
+           Apne nav ke hisaab se isay adjust karein. */
+        [--sbsd-nav:160px]
+      "
+    >
       {/* Custom keyframes */}
       <style>{`
         @keyframes sbsd-float {
@@ -163,19 +173,33 @@ export default function ChatbotWidget() {
         }
       `}</style>
 
-      {/* Chatbot Window */}
+      {/* ───────── Chatbot Window ─────────
+          Mobile  (<640px): full screen sheet
+          Desktop (>=640px): floating card, height screen ke hisaab se
+                             (neeche anchored, nav ke neeche), 320px - 720px
+      */}
       <div
         aria-hidden={!isOpen}
         className={`
-          origin-bottom-right
+          origin-top-right
           transform-gpu will-change-[transform,opacity]
           transition-[opacity,transform,visibility]
           duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]
           motion-reduce:transition-none
+
+          /* Mobile: full screen */
+          max-sm:fixed max-sm:inset-0 max-sm:h-[100dvh] max-sm:w-screen
+
+          /* Desktop: responsive card */
+          sm:relative
+          sm:w-[min(340px,calc(100vw_-_3.5rem))]
+          sm:h-[max(320px,min(720px,calc(100dvh_-_44px_-_var(--sbsd-nav))))]
+          sm:max-h-[calc(100dvh_-_44px)]
+
           ${
             isOpen
               ? "visible translate-y-0 scale-100 opacity-100"
-              : "invisible pointer-events-none translate-y-4 scale-90 opacity-0"
+              : "invisible pointer-events-none -translate-y-8 scale-95 opacity-0"
           }
         `}
       >
@@ -188,7 +212,7 @@ export default function ChatbotWidget() {
         />
       </div>
 
-      {/* Floating Assistant Button + Greeting */}
+      {/* ───────── Floating Assistant Button + Greeting ───────── */}
       <div
         onMouseLeave={() => setHoverSuppressed(false)}
         className={`
@@ -201,12 +225,14 @@ export default function ChatbotWidget() {
               ? "translate-y-0 scale-100 opacity-100"
               : "translate-y-6 scale-50 opacity-0"
           }
+          ${isOpen ? "hidden" : ""}
         `}
       >
-        {/* Greeting Card */}
+        {/* Greeting Card (sirf tablet/desktop par, mobile par button hi kaafi hai) */}
         {!isOpen && (
           <div
             className={`
+              hidden sm:block
               origin-right transition-all duration-500
               ease-[cubic-bezier(0.22,1,0.36,1)]
               motion-reduce:transition-none
@@ -231,7 +257,7 @@ export default function ChatbotWidget() {
                   if (e.key === "Enter" || e.key === " ") openChat();
                 }}
                 className="
-                  relative w-[250px] sm:w-[310px] cursor-pointer overflow-hidden
+                  relative w-[310px] max-w-[calc(100vw-7.5rem)] cursor-pointer overflow-hidden
                   rounded-2xl border border-white/15
                   bg-gradient-to-br from-[#2A5A8C] via-[#18365B] to-[#0F2440]
                   p-4 text-white
@@ -281,9 +307,7 @@ export default function ChatbotWidget() {
                     <p className="mt-0.5 flex items-center gap-1.5 text-[11px] font-medium text-emerald-300">
                       Online
                       <span className="text-white/40">•</span>
-                      <span className="text-white/60">
-                        Replies instantly
-                      </span>
+                      <span className="text-white/60">Replies instantly</span>
                     </p>
                   </div>
                 </div>
@@ -324,17 +348,15 @@ export default function ChatbotWidget() {
           type="button"
           onClick={() => (isOpen ? setIsOpen(false) : openChat())}
           aria-label={
-            isOpen
-              ? "Close virtual assistant"
-              : "Open virtual assistant"
+            isOpen ? "Close virtual assistant" : "Open virtual assistant"
           }
           aria-expanded={isOpen}
           className="
-            relative flex h-[62px] w-[62px] shrink-0
-            sm:h-[68px] sm:w-[68px]
+            relative flex h-[48px] w-[48px] shrink-0
+            sm:h-[54px] sm:w-[54px]
             items-center justify-center
             rounded-full
-            border-[3px] border-white
+            border-2 border-white
             bg-gradient-to-br from-[#244D78] via-[#18365B] to-[#102744]
             text-white
             shadow-[0_8px_30px_rgba(16,39,68,0.35)]
@@ -378,7 +400,7 @@ export default function ChatbotWidget() {
           {/* Icons (crossfade + rotate) */}
           <span className="relative z-10 flex h-full w-full items-center justify-center">
             <MessageCircle
-              size={29}
+              size={23}
               strokeWidth={2}
               className={`
                 absolute transition-all duration-300 ease-out
@@ -391,7 +413,7 @@ export default function ChatbotWidget() {
               `}
             />
             <X
-              size={27}
+              size={21}
               strokeWidth={2.2}
               className={`
                 absolute transition-all duration-300 ease-out
@@ -408,39 +430,17 @@ export default function ChatbotWidget() {
           {/* Notification Indicator */}
           <span
             className={`
-              absolute right-0.5 top-0.5 flex h-4 w-4
+              absolute right-0 top-0 flex h-3.5 w-3.5
               items-center justify-center rounded-full
               border-2 border-white bg-emerald-500
               transition-all duration-300
               motion-reduce:transition-none
-              ${
-                isOpen
-                  ? "scale-0 opacity-0"
-                  : "scale-100 opacity-100"
-              }
+              ${isOpen ? "scale-0 opacity-0" : "scale-100 opacity-100"}
             `}
           >
             <span className="h-1.5 w-1.5 rounded-full bg-white" />
           </span>
         </button>
-      </div>
-
-      {/* Assistant Label */}
-      <div
-        className={`
-          flex items-center gap-1.5 pr-1
-          text-[11px] font-medium tracking-wide text-slate-500
-          transition-all duration-300 ease-out
-          motion-reduce:transition-none
-          ${
-            isOpen || !mounted
-              ? "pointer-events-none translate-y-2 opacity-0"
-              : "translate-y-0 opacity-100"
-          }
-        `}
-      >
-       
-       
       </div>
     </div>
   );

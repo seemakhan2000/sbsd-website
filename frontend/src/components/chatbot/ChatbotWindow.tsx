@@ -1,4 +1,3 @@
-
 "use client";
 
 import {
@@ -34,7 +33,6 @@ export default function ChatbotWindow({
   onClose,
   onReset,
 }: Props) {
-
   // Auto-scroll reference
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -47,29 +45,47 @@ export default function ChatbotWindow({
   }, [messages, loading]);
 
   return (
+    /*
+      Size is controlled by the parent wrapper (ChatbotWidget).
+      This component just fills it: h-full w-full.
+      Mobile  -> full screen sheet (no rounded corners)
+      Desktop -> floating card (rounded + shadow)
+    */
     <section
       role="dialog"
       aria-label="Virginia SBSD Virtual Assistant"
-      className="flex h-[min(650px,calc(100dvh-110px))] w-[min(390px,calc(100vw-32px))] flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl"
+      className="
+        flex h-full w-full flex-col overflow-hidden
+        bg-white
+        sm:rounded-2xl sm:border sm:border-slate-200 sm:shadow-2xl
+      "
     >
-      <header className="flex items-center justify-between bg-[#142B49] px-4 py-4 text-white">
-        <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/10">
+      {/* Header */}
+      <header
+        className="
+          flex shrink-0 items-center justify-between
+          bg-[#142B49] px-4 py-3 text-white sm:py-4
+          pt-[max(0.75rem,env(safe-area-inset-top))]
+          sm:pt-4
+        "
+      >
+        <div className="flex min-w-0 items-center gap-3">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/10">
             <Bot size={23} />
           </div>
 
-          <div>
-            <h2 className="text-sm font-semibold">
+          <div className="min-w-0">
+            <h2 className="truncate text-sm font-semibold">
               Virginia SBSD Assistant
             </h2>
 
-            <p className="mt-1 text-xs text-blue-100">
-              Business & Loan Support
+            <p className="mt-0.5 truncate text-xs text-blue-100">
+              Business &amp; Loan Support
             </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-1">
+        <div className="flex shrink-0 items-center gap-1">
           <button
             type="button"
             onClick={onReset}
@@ -91,17 +107,19 @@ export default function ChatbotWindow({
         </div>
       </header>
 
-      <div className="flex items-center gap-2 border-b border-slate-100 bg-slate-50 px-4 py-2">
-        <ShieldCheck size={15} className="text-emerald-600" />
+      {/* Disclaimer */}
+      <div className="flex shrink-0 items-center gap-2 border-b border-slate-100 bg-slate-50 px-4 py-2">
+        <ShieldCheck size={15} className="shrink-0 text-emerald-600" />
 
-        <p className="text-[11px] text-slate-500">
+        <p className="text-[11px] leading-snug text-slate-500">
           AI-powered information assistant. Verify important
           requirements with official SBSD resources.
         </p>
       </div>
 
+      {/* Messages (only this area scrolls) */}
       <div
-        className="flex-1 space-y-4 overflow-y-auto bg-white p-4"
+        className="min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-contain bg-white p-4"
         aria-live="polite"
       >
         {messages.length === 0 && (
@@ -144,16 +162,19 @@ export default function ChatbotWindow({
         <div ref={messagesEndRef} />
       </div>
 
-      <ChatInput
-        onSend={onSendMessage}
-        disabled={loading}
-      />
+      {/* Input + footer (always visible at bottom) */}
+      <div className="shrink-0">
+        <ChatInput
+          onSend={onSendMessage}
+          disabled={loading}
+        />
 
-      <footer className="bg-white px-3 pb-2 text-center">
-        <p className="text-[10px] text-slate-400">
-          Virginia SBSD Virtual Assistant
-        </p>
-      </footer>
+        <footer className="bg-white px-3 pb-[max(0.5rem,env(safe-area-inset-bottom))] text-center">
+          <p className="text-[10px] text-slate-400">
+            Virginia SBSD Virtual Assistant
+          </p>
+        </footer>
+      </div>
     </section>
   );
 }
